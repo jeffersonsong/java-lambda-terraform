@@ -1,16 +1,6 @@
-variable "aws_access_key" {
-  # set aws access key
-  default = ""
-}
-
-variable "aws_secret_key" {
-  # set aws secret key
-  default = ""
-}
-
 variable "region" {
   # set aws region
-  default = ""
+  default = "us-east-2"
 }
 
 variable "lambda_payload_filename" {
@@ -22,7 +12,7 @@ variable "lambda_function_handler" {
 }
 
 variable "lambda_runtime" {
-  default = "java8"
+  default = "java17"
 }
 
 variable "api_path" {

@@ -6,5 +6,5 @@ locals {
 
 # terraform modules
 module "demo_java_lambda" {
-  source = "terraform/"
+  source = "./terraform/"
 }
