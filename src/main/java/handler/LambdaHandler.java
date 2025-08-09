@@ -3,41 +3,43 @@ package handler;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import org.json.simple.JSONObject;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.Map;
 
 /**
  * @author pramesh-bhattarai
  */
-public class LambdaHandler implements RequestHandler<Map<String, Object>, JSONObject> {
+public class LambdaHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
     private static String URL = "http://dummy.restapiexample.com/api/v1/employees";
 
     @Override
-    public JSONObject handleRequest(Map<String, Object> inputStream, Context context) {
+    public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent inputStream, Context context) {
         LambdaLogger logger = context.getLogger();
 
         logger.log(inputStream.toString());
 
-        JSONObject responseObject;
+        APIGatewayProxyResponseEvent response;
         try {
-            responseObject = fetchResponseFromUrl(URL, logger);
+            String payload = fetchResponseFromUrl(URL, logger);
+            response = createResponseObject(payload, 200);
         } catch (IOException e) {
             logger.log(e.getMessage());
-            responseObject = createResponseObject(e.getMessage());
+            String payload = e.getMessage();
+            response = createResponseObject(payload, 500);
         }
         logger.log("sending response");
-        logger.log(responseObject.toString());
-        return responseObject;
+        logger.log(response.toString());
+        return response;
     }
 
-    private JSONObject fetchResponseFromUrl(String url, LambdaLogger logger) throws IOException {
+    private String fetchResponseFromUrl(String url, LambdaLogger logger) throws IOException {
         URL obj = new URL(url);
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
         con.setRequestMethod("GET");
@@ -57,17 +59,18 @@ public class LambdaHandler implements RequestHandler<Map<String, Object>, JSONOb
             logger.log("response from :: " + url);
             logger.log(response.toString());
 
-            return createResponseObject(response.toString());
+            return response.toString();
         } else {
             logger.log("unable to get response :: ");
-            return createResponseObject(con.getResponseMessage());
+            return con.getResponseMessage();
         }
     }
 
-    private JSONObject createResponseObject(String response) {
-        JSONObject responseJson = new JSONObject();
-        responseJson.put("body", response);
-        return responseJson;
+    private APIGatewayProxyResponseEvent createResponseObject(String payload, Integer statusCode) {
+        APIGatewayProxyResponseEvent response = new APIGatewayProxyResponseEvent();
+        response.setBody(payload);
+        response.setStatusCode(statusCode);
+        return response;
     }
 
 }
