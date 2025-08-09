@@ -8,6 +8,9 @@ version '1.0-SNAPSHOT'
 sourceCompatibility = 17
 
 repositories {
+    flatDir {
+        dirs 'libs'
+    }
     mavenCentral()
 }
 
@@ -16,28 +19,12 @@ dependencies {
 
     implementation 'com.amazonaws:aws-lambda-java-core:1.2.2'
     runtimeOnly 'com.amazonaws:aws-lambda-java-log4j2:1.5.1'
-    compile("org.json:json:20250517")
-}
-
-task copyThirdPartyJars(type: Copy) {
-    // Specify the source for the JARs. This example assumes you want to copy
-    // all JARs from the 'runtimeClasspath' configuration.
-    from configurations.runtimeClasspath
-
-    // Set the destination directory where the JARs will be copied.
-    // In this example, it's a directory named "libs" inside the build directory.
-    into "$buildDir/libs"
-
-    // Optional: Filter the files to only include JAR files.
-    // You could also add other includes/excludes based on your needs.
-    include '**/json*.jar'
+    compile (name:'json-simple-1.1.1', ext:'jar')
 }
 
 tasks.withType(Jar) {
-    dependsOn copyThirdPartyJars
-
     into('lib') {
-        from "$buildDir/libs"
+        from 'libs'
     }
     destinationDir = file("$rootDir/output/")
 }
